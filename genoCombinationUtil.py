@@ -23,11 +23,9 @@ def push_entry(entry, dictionary):
     else:
         dictionary[entry] = 1
 
-def main(gmother, gfather, offspring, partner, ftwo, minGQ, phase_file, output_path, vcf_directory):
+def main(gmother, gfather, offspring, partner, ftwo, minGQ, phase_file, output_path, vcf_path):
     contig_dict = {}
     output_dict = {}
-
-    vcf_files = list(filter(lambda file_name: ".vcf" in file_name, os.listdir(vcf_directory)))
     
     with open(phase_file, "r") as phase_information:
         for line in phase_information:
@@ -41,36 +39,35 @@ def main(gmother, gfather, offspring, partner, ftwo, minGQ, phase_file, output_p
 
     allKeys = list(genoCombinations())
 
-    for file_name in vcf_files:
-        with open(vcf_directory+file_name, "r") as vcf_file:
-            header_list = vcf_file.readline().rstrip().split("\t")
+    with open(vcf_path, "r") as vcf_file:
+        header_list = vcf_file.readline().rstrip().split("\t")
 
-            individual_idx = [header_list.index(individual) for individual in [gmother, gfather, offspring, partner, ftwo]]
+        individual_idx = [header_list.index(individual) for individual in [gmother, gfather, offspring, partner, ftwo]]
             
-            for line in vcf_file:
-                l_list = line.rstrip().split("\t")
-                contig = l_list[0]
+        for line in vcf_file:
+            l_list = line.rstrip().split("\t")
+            contig = l_list[0]
 
-                if contig not in contig_dict:
-                    break
-                else:
-                    position = l_list[1]
+            if contig not in contig_dict:
+                break
+            else:
+                position = l_list[1]
                 
-                value_list = contig_dict[contig]
-            
-                for start,end,phase in value_list:
-                    if int(start) <= int(position) and int(end) >= int(position):
-                        full_info = [l_list[idx] for idx in individual_idx]
+            value_list = contig_dict[contig]
+        
+            for start,end,phase in value_list:
+                if int(start) <= int(position) and int(end) >= int(position):
+                    full_info = [l_list[idx] for idx in individual_idx]
                                 
-                        abbrev_geno = "".join([geno_entry[0:3] for geno_entry in full_info]).replace("/", "") + phase
+                    abbrev_geno = "".join([geno_entry[0:3] for geno_entry in full_info]).replace("/", "") + phase
 
-                        if abbrev_geno not in allKeys:
-                            continue
-                        else:
-                            min_gq = min([int(geno_entry.split(":")[3]) for geno_entry in full_info])
+                    if abbrev_geno not in allKeys:
+                        continue
+                    else:
+                        min_gq_entry = min([int(geno_entry.split(":")[3]) for geno_entry in full_info])
 
-                        if min_gq >= minGQ:
-                            push_entry(abbrev_geno, output_dict)
+                    if min_gq_entry >= minGQ:
+                        push_entry(abbrev_geno, output_dict)
     
     def writeOutput(dictionary, path, keys = allKeys):
         with open(path, "a") as output_file:
