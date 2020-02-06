@@ -183,9 +183,6 @@ def main(output_path, n, segSites, sampleSize,
 
     eps_vec = (eps01, eps10, eps20, eps02, eps12, eps21)
 
-#    print("Epsilons: ", end = '')
-#    print(*eps_vec, sep = ', ')
-
     eps_vec = [float(eps) for eps in eps_vec]
 
     SG = siteGenerator(int(sampleSize))
@@ -195,7 +192,6 @@ def main(output_path, n, segSites, sampleSize,
         sample_dict = build_related(SG.draw_genotypes(int(float(segSites))))
         out_dict = EG.emit_errors(sample_dict)
         writeObservations(out_dict, output_path)
-#        print("Wrote simulation to: " + output_path)
 
 if __name__ == "__main__":
     main(*sys.argv[1:])
