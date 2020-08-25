@@ -120,7 +120,18 @@ class errorGenerator:
 # take the observed genotypes and emit errors based on transmission model
 def build_related(unrelated_genocounts):
     related_genocounts = {}
+    
+	# Simulate dispersal of phased counts in the F2 due to a finite number of haplotypes from recombination
+	# For each pedigree,
+	#  (1) Draw a Poisson number of crossovers in the focal individual
+	#  (2) Calculate the difference between expectation, 50% for each phase, and a binomial draw based on the number of crossovers.
+	#  (3) Add/subtract this difference to the two phase classes, halved for the 4 possible inheritance classes
+	focal_xocount    = numpy.random.poisson(50)
+	recomb_dispersal = (0.5 - (numpy.random.binomial(focal_xocount, 0.5) / focal_xocount))
 
+	phases      = (0, 0, 1, 1)
+	phase_probs = numpy.array([1/4.] * 4) + [recomb_dispersal/2, recomb_dispersal/2, -recomb_dispersal/2, -recomb_dispersal/2]
+    
     for genokey in unrelated_genocounts.keys():
         P1Geno = genokey[0:2]
         P2Geno = genokey[2:4]
@@ -142,8 +153,8 @@ def build_related(unrelated_genocounts):
                                 (phasedfocal[0], PartnerGeno[1]),
                                 (phasedfocal[1], PartnerGeno[0]),
                                 (phasedfocal[1], PartnerGeno[1]))
-            phases = (0, 0, 1, 1)
-            offspringcounts = numpy.random.multinomial(focalcount, [1/4.]*4)
+            
+            offspringcounts  = numpy.random.multinomial(focalcount, phase_probs)
 
             # Phasedoffsprings is not ordered arbitrarily because zipped with phase of phasedfocal
 
